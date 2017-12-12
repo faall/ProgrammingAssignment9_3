@@ -1,0 +1,76 @@
+---
+title: "Peer-graded Assignment week 3"
+author: "Fabio Alexandre Alberini Lopes Lima"
+date: "10 de diciembre de 2017"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+#setwd("Documents/DataScientist/9dataProduct/paw3/")
+```
+
+```{r get_data, message=FALSE}
+library(xlsx)
+library(plotly)
+library(stringi)
+
+filenames <- c("nomnac16.xlsx","nomnac15.xlsx","nomnac14.xlsx","nomnac13.xls","nomnac12.xls", "nomnac11.xls","nomnac10.xls")
+years <- 2016:2010
+Bnames <- character()
+Gnames <- character()
+
+Snames <- data.frame(name = character(), count=numeric(), rank= numeric(), sex = factor(), year = numeric())
+
+for (i in 1:7) {
+    boys  <- read.xlsx(filenames[i], sheetIndex = 2, startRow = 5, endRow = 105, header = F, stringsAsFactors = F, colIndex = c(1:2))
+    girls <- read.xlsx(filenames[i], sheetIndex = 2, startRow = 5, endRow = 105, header = F, stringsAsFactors = F, colIndex = c(4:5))
+    
+    boys[,3] <- 1:nrow(boys); boys[,4] <- "M"; boys[,5] <- years[i]; names(boys) <- names(Snames)
+    girls[,3] <- 1:nrow(girls); girls[,4] <- "M"; girls[,5] <- years[i]; names(girls) <- names(Snames)
+    
+    Snames <- rbind(Snames, boys, girls)
+    Bnames <- c(Bnames, boys[1:6,1])
+    Gnames <- c(Gnames, girls[1:6,1])
+}
+Bnames <- unique(stri_trim(Bnames))
+Gnames <- unique(stri_trim(Gnames))
+Snames[,1] <- stri_trim(Snames[,1])
+
+```
+
+## Most popular names for babies in Spain since 2010.
+
+### About the Data
+
+You can find all the source data and code in the git hub repository <https://github.com/faall/ProgrammingAssignment9_3> 
+
+Data was obtained from Spain's National Statistics Institute <http://www.ine.es/dyngs/INEbase/es/operacion.htm?c=Estadistica_C&cid=1254736177009&menu=resultados&secc=1254736195498&idp=1254734710990>
+
+I have taken the top 6 names for each year and then constructed the graphic with all the names in the top list. The idea is to compare the evolution of popular names in this decade.
+
+## Common Names for Girls
+
+```{r plot_girls}
+plot_ly(Snames[Snames$name %in% Gnames,],
+        x=~year,
+        y=~rank,
+        color = ~name, 
+        type = "scatter",
+        mode = "lines") %>%
+      layout(xaxis = list(title ="Year"),
+             yaxis = list(title ="Rank", autorange = "reversed", rangemode = "tozero"))
+```
+
+## Common Names for Boys
+
+```{r plot_boys}
+plot_ly(Snames[Snames$name %in% Bnames,],
+        x=~year,
+        y=~rank,
+        color = ~name, 
+        type = "scatter",
+        mode = "lines") %>%
+      layout(xaxis = list(title ="Year"),
+             yaxis = list(title ="Rank", autorange = "reversed", rangemode = "tozero"))
+```
